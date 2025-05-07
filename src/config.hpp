@@ -1,7 +1,7 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 namespace config
 {   

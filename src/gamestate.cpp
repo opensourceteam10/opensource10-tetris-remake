@@ -14,7 +14,14 @@
  * ====================================
  */
 
-GameState::GameState (InputManager *manager) : State (manager) { }
+ GameState::GameState (InputManager *manager) : State(manager),
+ stage(1),
+ linesCleared(0),
+ dropInterval(0.8f),
+ dropTimer(0.0f),
+ stageTextTexture(nullptr)
+{ }
+
 
 GameState::~GameState ()
 {
@@ -28,6 +35,8 @@ void GameState::initialize ()
     srand(time(0));
     hold_block_first_time = true;
     hold_block_used = false;
+    stageTextTexture = new Texture();
+
     
     // Get random first piece
     nextPiece.piece_type = getRandom(0, 6);
@@ -75,6 +84,8 @@ void GameState::exit ()
     delete gameover_text;
     delete tetrominoSprites;
     delete playfieldFrame;
+    delete stageTextTexture;
+
 }
 
 void GameState::run ()
@@ -144,7 +155,7 @@ void GameState::run ()
                 }
                 
                 time_snap2 = SDL_GetTicks();
-                if (time_snap2 - time_snap1 >= config::wait_time)
+                if (time_snap2 - time_snap1 >= static_cast<unsigned long long>(dropInterval * 1000))
                 {
                     movePieceDown();
                     time_snap1 = SDL_GetTicks();
@@ -244,13 +255,24 @@ void GameState::createNewPiece ()
 void GameState::checkState ()
 {
     board->storePiece(currentPiece);
-    board->clearFullLines();
+    int cleared = board->clearFullLines();  // 줄 개수 반환된다고 가정 (int로 바꿔도 에러 없으면 OK)
+
+    // 스테이지 로직
+    linesCleared += cleared;
+    if (linesCleared >= 5) {
+        stage++;
+        linesCleared = 0;
+        dropInterval = std::max(0.1f, dropInterval - 0.1f);
+        std::cout << "Stage Up! Now at Stage " << stage << ", drop interval = " << dropInterval << "s\n";
+    }
+
     if (!board->isGameOver())
     {
         createNewPiece();
     }
     hold_block_used = false;                // We can now use the hold block again
 }
+
 
 void GameState::handleEvent (Action action)
 {
@@ -402,6 +424,12 @@ void GameState::drawBoard ()
             }
         }
     }
+        // 스테이지 텍스트 그리기
+    std::string stageText = "Stage: " + std::to_string(stage);
+    stageTextTexture->loadFromText(stageText, Game::getInstance()->mRenderer->mediumFont, config::default_text_color);
+    stageTextTexture->render(20, 20);  // 좌측 상단 (x=20, y=20)에 렌더링
+
+
 }
 
 void GameState::drawCurrentPiece (Piece p)

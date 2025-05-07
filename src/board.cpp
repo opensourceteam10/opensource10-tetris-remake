@@ -76,25 +76,43 @@ void Board::storePiece (Piece p)
     pieces.push_back(p);
 }
 
-// Clears filled lines
-void Board::clearFullLines()
+int Board::clearFullLines()
 {
-    for (int row = 0; row < config::playfield_height; row++)
+    int linesCleared = 0;
+    for (int row = 0; row < config::playfield_height; ++row)
     {
-        bool line_filled = true;
-        for (int col = 0; col < config::playfield_width; col++)
+        bool isLineFull = true;
+        for (int col = 0; col < config::playfield_width; ++col)
         {
             if (isBlockFree(row, col))
             {
-                line_filled = false;
-            } 
+                isLineFull = false;
+                break;
+            }
         }
-        if (line_filled)
+
+        if (isLineFull)
         {
-            deleteLine(row);
+            for (int r = row; r > 0; --r)
+            {
+                for (int c = 0; c < config::playfield_width; ++c)
+                {
+                    board_state[r][c] = board_state[r-1][c];
+                }
+            }
+            for (int c = 0; c < config::playfield_width; ++c)
+            {
+                board_state[0][c] = BlockStatus::block_empty;
+            }
+
+            linesCleared++;
         }
     }
+
+    return linesCleared;
 }
+
+
 
 // True if the game has ended; Note: the row index starts from the top
 bool Board::isGameOver ()

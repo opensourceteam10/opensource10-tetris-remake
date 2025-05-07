@@ -1,7 +1,7 @@
 #ifndef INPUTMANAGER_HPP
 #define INPUTMANAGER_HPP
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 // A simple enumeration to hold all possible actions when playing.
 enum class Action
