@@ -12,6 +12,9 @@
  * Public methods start here
  * ====================================
  */
+void Renderer::setBackgroundColor(Uint8 r, Uint8 g, Uint8 b) {
+    SDL_SetRenderDrawColor(mSDLRenderer, r, g, b, 0xFF);
+}
 
 void Renderer::initialize (SDL_Window *window)
 {
@@ -38,9 +41,10 @@ Renderer::~Renderer ()
 
 void Renderer::clearScreen ()
 {
-    SDL_SetRenderDrawColor(mSDLRenderer, config::background_r_light, config::background_g_light, config::background_b_light, 0xFF);
+    // 이미 setBackgroundColor로 색 설정되었으므로 여기선 draw color 설정 생략
     SDL_RenderClear(mSDLRenderer);
 }
+
 
 void Renderer::renderTexture (Texture *texture, int x, int y)
 {

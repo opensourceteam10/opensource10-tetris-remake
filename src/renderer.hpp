@@ -15,7 +15,7 @@ class Renderer
 public:
     void initialize (SDL_Window *window);
     ~Renderer ();
-
+    void setBackgroundColor(Uint8 r, Uint8 g, Uint8 b);
     void clearScreen ();
     void renderTexture (Texture *texture, int x, int y);
     void updateScreen ();

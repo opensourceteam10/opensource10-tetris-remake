@@ -13,6 +13,21 @@
  * Public methods start here
  * ====================================
  */
+// 스테이지별 배경색 목록
+const SDL_Color stageColors[] = {
+    {249, 230, 207}, // Stage 1 - 기본 밝은 색
+    {100, 149, 237}, // Stage 2 - 콘월플라워 블루
+    {186, 85, 211},  // Stage 3 - 오키드 퍼플
+    {255, 160, 122}, // Stage 4 - 살몬 오렌지
+    {144, 238, 144}, // Stage 5 - 연두색
+    {135, 206, 250}, // Stage 6 - 스카이 블루
+    {255, 182, 193}, // Stage 7 - 핑크
+    {255, 255, 224}, // Stage 8 - 라이트 옐로우
+    {119, 136, 153}, // Stage 9 - 라이트 슬레이트 그레이
+    {72, 61, 139}    // Stage 10+ - 다크 슬레이트 블루
+};
+const int numStageColors = sizeof(stageColors) / sizeof(stageColors[0]);
+
 
  GameState::GameState (InputManager *manager) : State(manager),
  stage(1),
@@ -204,14 +219,28 @@ void GameState::update ()
     // We don't use this function in this state, the work is done by handleEvent() 
 }
 
+
+
 void GameState::draw ()
 {
+    
+    
+
+    // 현재 스테이지에 해당하는 색 선택
+    int colorIndex = std::min(stage - 1, numStageColors - 1);
+    SDL_Color bgColor = stageColors[colorIndex];
+    Game::getInstance()->mRenderer->setBackgroundColor(bgColor.r, bgColor.g, bgColor.b);
+    Game::getInstance()->mRenderer->clearScreen();
+
     drawBoard();
     drawCurrentPiece(currentPiece);
-    if (!board->isGameOver() && config::ghost_piece_enabled) drawGhostPiece(currentPiece);
-    if (!hold_block_first_time) drawHoldPiece(holdPiece);
+    if (!board->isGameOver() && config::ghost_piece_enabled)
+        drawGhostPiece(currentPiece);
+    if (!hold_block_first_time)
+        drawHoldPiece(holdPiece);
     drawNextPiece(nextPiece);
 }
+
 
 /*
  * ====================================
@@ -259,7 +288,7 @@ void GameState::checkState ()
 
     // 스테이지 로직
     linesCleared += cleared;
-    if (linesCleared >= 5) {
+    if (linesCleared >= 1) {
         stage++;
         linesCleared = 0;
         dropInterval = std::max(0.1f, dropInterval - 0.1f);
