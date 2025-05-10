@@ -53,6 +53,10 @@ public:
     float dropTimer;
 
     Texture *stageTextTexture;
+    
+    int score = 0;
+    Texture* scoreTextTexture = nullptr;
+
 
     // 주요 메서드
     bool isGameOver();

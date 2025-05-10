@@ -51,6 +51,9 @@ void GameState::initialize ()
     hold_block_first_time = true;
     hold_block_used = false;
     stageTextTexture = new Texture();
+    score = 0;
+    scoreTextTexture = new Texture();
+
 
     
     // Get random first piece
@@ -100,6 +103,8 @@ void GameState::exit ()
     delete tetrominoSprites;
     delete playfieldFrame;
     delete stageTextTexture;
+    delete scoreTextTexture;
+
 
 }
 
@@ -285,15 +290,26 @@ void GameState::checkState ()
 {
     board->storePiece(currentPiece);
     int cleared = board->clearFullLines();  // 줄 개수 반환된다고 가정 (int로 바꿔도 에러 없으면 OK)
-
+    if (cleared > 0) {
+        int points = 0;
+        if (cleared == 1) points = 100;
+        else if (cleared == 2) points = 300;
+        else if (cleared == 3) points = 500;
+        else if (cleared >= 4) points = 800;
+    
+        score += points;
+    }
+    
     // 스테이지 로직
     linesCleared += cleared;
-    if (linesCleared >= 1) {
+
+    while (linesCleared >= 1) {
         stage++;
-        linesCleared = 0;
+        linesCleared--;
         dropInterval = std::max(0.1f, dropInterval - 0.1f);
         std::cout << "Stage Up! Now at Stage " << stage << ", drop interval = " << dropInterval << "s\n";
     }
+
 
     if (!board->isGameOver())
     {
@@ -457,6 +473,9 @@ void GameState::drawBoard ()
     std::string stageText = "Stage: " + std::to_string(stage);
     stageTextTexture->loadFromText(stageText, Game::getInstance()->mRenderer->mediumFont, config::default_text_color);
     stageTextTexture->render(20, 20);  // 좌측 상단 (x=20, y=20)에 렌더링
+    std::string scoreText = "Score: " + std::to_string(score);
+    scoreTextTexture->loadFromText(scoreText, Game::getInstance()->mRenderer->mediumFont, config::default_text_color);
+    scoreTextTexture->render(20, 50); // 스테이지 텍스트 아래
 
 
 }
