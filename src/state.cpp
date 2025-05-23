@@ -6,6 +6,7 @@
 State::State (InputManager *manager)
 {
     mInputManager = manager;
+    mRenderer = Game::getInstance()->mRenderer;
 }
 
 void State::popState (Game *game)

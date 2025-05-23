@@ -5,7 +5,7 @@
 #include "inputmanager.hpp"
 #include "renderer.hpp"
 
-enum StateID {STATE_NULL, STATE_EXIT, STATE_POP, STATE_PLAY, STATE_MENU, STATE_PAUSE};
+enum StateID {STATE_NULL, STATE_EXIT, STATE_POP, STATE_PLAY, STATE_MENU, STATE_PAUSE, LOBBY_STATE};
 
 class Game;
 
