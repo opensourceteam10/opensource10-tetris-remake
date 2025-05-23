@@ -15,6 +15,7 @@ class GameState;
 class MenuState;
 class OptionsState;
 class PausedState;
+class LobbyState;
 
 // Utilizes the "Singleton pattern" to ensure there can only be one game
 class Game
@@ -34,6 +35,7 @@ public:
     static void pushOptions();
     static void pushNewGame();
     static void pushPaused();
+    static void pushLobby();
     static void goBack();
     static void goDoubleBack();
 
@@ -52,6 +54,7 @@ private:
     MenuState *mMainMenuState;
     OptionsState *mOptionsState;
     PausedState *mPausedState;
+    LobbyState *mLobbyState;
 };
 
 #endif // GAME_HPP

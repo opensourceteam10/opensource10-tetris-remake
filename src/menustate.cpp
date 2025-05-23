@@ -32,12 +32,14 @@ void MenuState::initialize ()
     #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
     mButtons.push_back(new Button ("../../assets/button-play.png", &Game::pushNewGame, (config::logical_window_width-80)/2, 130));
     mButtons.push_back(new Button ("../../assets/button-options.png", &Game::pushOptions, (config::logical_window_width-80)/2, 180));
-    mButtons.push_back(new Button ("../../assets/button-exit.png", &Game::goBack, (config::logical_window_width-80)/2, 230));
+    mButtons.push_back(new Button("Multi", &Game::pushLobby, (config::logical_window_width-160)/2, 230, 160, 40));
+    mButtons.push_back(new Button ("../../assets/button-exit.png", &Game::goBack, (config::logical_window_width-80)/2, 280));
 
     #else
     mButtons.push_back(new Button ("../assets/button-play.png", &Game::pushNewGame, (config::logical_window_width-80)/2, 130));
     mButtons.push_back(new Button ("../assets/button-options.png", &Game::pushOptions, (config::logical_window_width-80)/2, 180));
-    mButtons.push_back(new Button ("../assets/button-exit.png", &Game::goBack, (config::logical_window_width-80)/2, 230));
+    mButtons.push_back(new Button("Multi", &Game::pushLobby, (config::logical_window_width-160)/2, 230, 160, 40));
+    mButtons.push_back(new Button ("../assets/button-exit.png", &Game::goBack, (config::logical_window_width-80)/2, 280));
     #endif
 }
 

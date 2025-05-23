@@ -13,6 +13,7 @@
 #include "optionsstate.hpp"
 #include "pausedstate.hpp"
 #include "state.hpp"
+#include "LobbyState.hpp"
 
 /*
  * ====================================
@@ -151,6 +152,14 @@ void Game::pushPaused ()
     Game::getInstance()->mPausedState->initialize();
     Game::getInstance()->pushState(Game::getInstance()->mPausedState);
 
+}
+
+void Game::pushLobby ()
+{
+    delete Game::getInstance()->mLobbyState;
+    Game::getInstance()->mLobbyState = new LobbyState(Game::getInstance()->mManager);
+    Game::getInstance()->mLobbyState->initialize();
+    Game:getInstance()->pushState(Game::getInstance()->mLobbyState);
 }
 
 // Goes back one state (by popping the state in the front)
