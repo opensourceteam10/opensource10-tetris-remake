@@ -5,6 +5,7 @@
 struct Piece
 {
 public:
+    Piece() : piece_type(0), rotation(0), r(0), c(0) {}  // 기본 생성자
     Piece (int p_piece_type, int p_rotation);       // Initialize a piece with these values
     Piece (const Piece &p);                         // Copy constructor
     int getBlockType (int r_offset, int c_offset);  // Returns the block type for a certain piece, rotation, and position

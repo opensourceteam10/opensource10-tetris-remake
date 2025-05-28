@@ -14,13 +14,15 @@ class InputManager
 {
 public:
     InputManager ();
+    virtual ~InputManager() {};
     void clearEventQueue ();
     Action getAction ();
     bool isGameExiting ();
     bool pollAction ();
     void setExit ();
-private:
+protected:
     bool quit_game;
+private:
     Action action;
 };
 

@@ -2,7 +2,7 @@
 #include "game.hpp" // Game::getInstance()->mRenderer->font 등
 #include <SDL_ttf.h>
 
-// 1. 이미지 버튼 생성자 (이미지 불러옴)
+// 이미지 버튼 생성자
 Button::Button(std::string path, void (*callback)(), int posX, int posY)
 {
     callbackFunction = callback;
@@ -10,13 +10,12 @@ Button::Button(std::string path, void (*callback)(), int posX, int posY)
     position_y = posY;
     texture = new Texture;
     texture->loadFromImage(path);
-    width = 96;   // 살짝 키운 크기
-    height = 30;
-
+    width = texture->getWidth();
+    height = texture->getHeight();
     isTextButton = false;
 }
 
-// 2. 텍스트 버튼 생성자 (직접 텍스트 입력 받음)
+// 텍스트 버튼 생성자
 Button::Button(const std::string& text, void (*callback)(), int posX, int posY, int w, int h)
 {
     callbackFunction = callback;
@@ -28,7 +27,6 @@ Button::Button(const std::string& text, void (*callback)(), int posX, int posY, 
     isTextButton = true;
     texture = nullptr;
 }
-
 
 Button::~Button()
 {
@@ -49,10 +47,9 @@ bool Button::loadTexture(std::string path)
 
 void Button::draw()
 {
-    SDL_Renderer* renderer = Game::getInstance()->mRenderer->mSDLRenderer;
-
     if (isTextButton) {
-        // 텍스트 버튼 배경
+        SDL_Renderer* renderer = Game::getInstance()->mRenderer->mSDLRenderer;
+        // 버튼 배경
         SDL_Rect rect = {position_x, position_y, width, height};
         SDL_SetRenderDrawColor(renderer, 80, 80, 200, 255);
         SDL_RenderFillRect(renderer, &rect);
@@ -67,12 +64,9 @@ void Button::draw()
         SDL_FreeSurface(surf);
         SDL_DestroyTexture(tex);
     } else {
-        // 이미지 버튼 배경을 width x height로 강제 크기 지정
-        SDL_Rect dst = {position_x, position_y, width, height};
-        texture->render(dst);
+        texture->render(position_x, position_y);
     }
 }
-
 
 int Button::getX() { return position_x; }
 int Button::getY() { return position_y; }
