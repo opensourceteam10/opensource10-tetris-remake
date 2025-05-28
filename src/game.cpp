@@ -7,6 +7,7 @@
 #include <SDL_ttf.h>
 
 #include "button.hpp"
+#include "ChallengeMenuState.hpp"
 #include "config.hpp"
 #include "gamestate.hpp"
 #include "menustate.hpp"
@@ -14,6 +15,8 @@
 #include "pausedstate.hpp"
 #include "state.hpp"
 #include "LobbyState.hpp"
+#include "SpeedChallengeState.hpp"  
+#include "ModeSelectState.hpp"  // ← 추가된 부분
 
 /*
  * ====================================
@@ -119,6 +122,14 @@ void Game::pushState (State *state)
     mStates.push_back(state);
 }
 
+void Game::pushSpeedChallenge()
+{
+    delete Game::getInstance()->mSpeedChallengeState;
+    Game::getInstance()->mSpeedChallengeState = new SpeedChallengeState(Game::getInstance()->mManager);
+    Game::getInstance()->mSpeedChallengeState->initialize();
+    Game::getInstance()->pushState(Game::getInstance()->mSpeedChallengeState);
+}
+
 // Deletes the current state and replaces it with a different one
 void Game::changeState (State *state)
 {
@@ -132,7 +143,16 @@ void Game::pushNewGame ()
     delete Game::getInstance()->mPlayState;
     Game::getInstance()->mPlayState = new GameState(Game::getInstance()->mManager);
     Game::getInstance()->mPlayState->initialize();
-    Game:getInstance()->pushState(Game::getInstance()->mPlayState);
+    Game::getInstance()->pushState(Game::getInstance()->mPlayState);
+}
+
+// Pushes the lobby to the front
+void Game::pushLobby ()
+{
+    delete Game::getInstance()->mLobbyState;
+    Game::getInstance()->mLobbyState = new LobbyState(Game::getInstance()->mManager);
+    Game::getInstance()->mLobbyState->initialize();
+    Game::getInstance()->pushState(Game::getInstance()->mLobbyState);
 }
 
 // Pushes the options to the front
@@ -151,15 +171,22 @@ void Game::pushPaused ()
     Game::getInstance()->mPausedState = new PausedState (Game::getInstance()->mManager);
     Game::getInstance()->mPausedState->initialize();
     Game::getInstance()->pushState(Game::getInstance()->mPausedState);
-
 }
 
-void Game::pushLobby ()
+// Pushes the mode select to the front ← 추가된 부분
+void Game::pushModeSelect ()
 {
-    delete Game::getInstance()->mLobbyState;
-    Game::getInstance()->mLobbyState = new LobbyState(Game::getInstance()->mManager);
-    Game::getInstance()->mLobbyState->initialize();
-    Game:getInstance()->pushState(Game::getInstance()->mLobbyState);
+    delete Game::getInstance()->mModeSelectState;
+    Game::getInstance()->mModeSelectState = new ModeSelectState(Game::getInstance()->mManager);
+    Game::getInstance()->mModeSelectState->initialize();
+    Game::getInstance()->pushState(Game::getInstance()->mModeSelectState);
+}
+void Game::pushChallengeMenu()
+{
+    delete Game::getInstance()->mChallengeMenuState;
+    Game::getInstance()->mChallengeMenuState = new ChallengeMenuState(Game::getInstance()->mManager);
+    Game::getInstance()->mChallengeMenuState->initialize();
+    Game::getInstance()->pushState(Game::getInstance()->mChallengeMenuState);
 }
 
 // Goes back one state (by popping the state in the front)
@@ -189,4 +216,7 @@ bool Game::isGameExiting ()
 
 Game *Game::mInstance = 0;
 
-Game::Game () {}
+Game::Game () {
+    mChallengeMenuState = nullptr;
+    mSpeedChallengeState = nullptr; 
+}

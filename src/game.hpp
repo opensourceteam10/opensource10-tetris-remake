@@ -10,12 +10,17 @@
 #include "renderer.hpp"
 #include "state.hpp"
 
+class SpeedChallengeState;     // 전방 선언
+class ChallengeMenuState;      // 전방 선언
+class ChallengeMenuState;
 class State;
+class SpeedChallengeState;
 class GameState;
 class MenuState;
 class OptionsState;
 class PausedState;
 class LobbyState;
+class ModeSelectState;  // ← 추가된 부분
 
 // Utilizes the "Singleton pattern" to ensure there can only be one game
 class Game
@@ -32,12 +37,15 @@ public:
     void pushState (State *s);
     void changeState (State *s);
 
+    void pushChallengeMenu();
     static void pushOptions();
     static void pushNewGame();
     static void pushPaused();
     static void pushLobby();
+    static void pushModeSelect();  // ← 추가된 부분
     static void goBack();
     static void goDoubleBack();
+    static void pushSpeedChallenge();  
 
     bool isGameExiting();
 
@@ -50,11 +58,14 @@ private:
     InputManager *mManager;
     std::vector<State*> mStates;
 
+    ChallengeMenuState *mChallengeMenuState;
+    SpeedChallengeState *mSpeedChallengeState;
     GameState *mPlayState;
     MenuState *mMainMenuState;
     OptionsState *mOptionsState;
     PausedState *mPausedState;
     LobbyState *mLobbyState;
+    ModeSelectState *mModeSelectState;  // ← 추가된 부분
 };
 
 #endif // GAME_HPP

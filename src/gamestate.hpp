@@ -21,7 +21,7 @@ public:
     void update() override;
     void draw() override;
 
-    private:
+    protected:
     // 게임 상태 변수
     enum GamePhase {GAME_STARTED, GAME_PLAYING, GAME_FINISHED};
     GamePhase currentPhase;
@@ -61,7 +61,7 @@ public:
     // 주요 메서드
     bool isGameOver();
     void createNewPiece();
-    void checkState();
+    virtual void checkState();
     void handleEvent(Action action);
     void movePieceDown();
 
