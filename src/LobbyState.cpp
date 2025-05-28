@@ -90,8 +90,11 @@ void LobbyState::update() {
 }
 
 void LobbyState::draw() {
-    if (!mRenderer) return;
-    mRenderer->clearScreen();
+    // 수정: mRenderer 대신 Game::getInstance()->mRenderer 사용
+    Renderer* renderer = Game::getInstance()->mRenderer;
+    if (!renderer) return;
+    
+    renderer->clearScreen();
 
     // 타이틀
     if (titleTexture)
@@ -100,9 +103,9 @@ void LobbyState::draw() {
     // Room Create 버튼 (오른쪽 위)
     if (roomCreateButton) {
         if (focus == LobbyFocus::ROOM_CREATE) {
-            SDL_SetRenderDrawColor(mRenderer->mSDLRenderer, 200, 200, 100, 80);
+            SDL_SetRenderDrawColor(renderer->mSDLRenderer, 200, 200, 100, 80);
             SDL_Rect highlight = {config::logical_window_width - 200, 120, 160, 40};
-            SDL_RenderFillRect(mRenderer->mSDLRenderer, &highlight);
+            SDL_RenderFillRect(renderer->mSDLRenderer, &highlight);
         }
         roomCreateButton->draw();
     }
@@ -118,19 +121,19 @@ void LobbyState::draw() {
                 config::logical_window_width / 2 - 100, base_y + i * 60 - 25,
                 200, 50
             };
-            SDL_SetRenderDrawBlendMode(mRenderer->mSDLRenderer, SDL_BLENDMODE_BLEND);
-            SDL_SetRenderDrawColor(mRenderer->mSDLRenderer, 0, 150, 255, 80);
-            SDL_RenderFillRect(mRenderer->mSDLRenderer, &highlight);
-            SDL_SetRenderDrawBlendMode(mRenderer->mSDLRenderer, SDL_BLENDMODE_NONE);
+            SDL_SetRenderDrawBlendMode(renderer->mSDLRenderer, SDL_BLENDMODE_BLEND);
+            SDL_SetRenderDrawColor(renderer->mSDLRenderer, 0, 150, 255, 80);
+            SDL_RenderFillRect(renderer->mSDLRenderer, &highlight);
+            SDL_SetRenderDrawBlendMode(renderer->mSDLRenderer, SDL_BLENDMODE_NONE);
         }
     }
 
     // Back 버튼 (좌상단)
     if (backButton) {
         if (focus == LobbyFocus::BACK_BTN) {
-            SDL_SetRenderDrawColor(mRenderer->mSDLRenderer, 200, 200, 100, 80);
+            SDL_SetRenderDrawColor(renderer->mSDLRenderer, 200, 200, 100, 80);
             SDL_Rect highlight = {40, 40, 120, 40};
-            SDL_RenderFillRect(mRenderer->mSDLRenderer, &highlight);
+            SDL_RenderFillRect(renderer->mSDLRenderer, &highlight);
         }
         backButton->draw();
     }
@@ -138,8 +141,8 @@ void LobbyState::draw() {
     // 방 생성 입력창
     if (inRoomCreateInput) {
         SDL_Rect inputRect = {config::logical_window_width / 2 - 120, 140, 240, 40};
-        SDL_SetRenderDrawColor(mRenderer->mSDLRenderer, 255, 255, 255, 255);
-        SDL_RenderFillRect(mRenderer->mSDLRenderer, &inputRect);
+        SDL_SetRenderDrawColor(renderer->mSDLRenderer, 255, 255, 255, 255);
+        SDL_RenderFillRect(renderer->mSDLRenderer, &inputRect);
 
         Texture inputText;
         inputText.loadFromText(roomNameInput, Game::getInstance()->mRenderer->mediumFont, {0,0,0,255});
@@ -150,7 +153,7 @@ void LobbyState::draw() {
         label.renderCentered(config::logical_window_width / 2, 120);
     }
 
-    mRenderer->updateScreen();
+    renderer->updateScreen();
 }
 
 void LobbyState::joinRoom(int index) {
@@ -183,4 +186,3 @@ void LobbyState::handleRoomCreateInput(const SDL_Event& event) {
         }
     }
 }
-

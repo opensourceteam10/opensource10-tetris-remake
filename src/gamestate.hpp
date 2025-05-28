@@ -61,7 +61,7 @@ public:
     // 주요 메서드
     bool isGameOver();
     void createNewPiece();
-    void checkState();
+    virtual void checkState();
     void handleEvent(Action action);
     void movePieceDown();
 
