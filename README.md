@@ -26,10 +26,9 @@ sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev cmake
 
 1. 프로젝트 클론
 ```bash
-git clone https://github.com/kangdaeun1022/opensource10-tetris-remake.git
+git clone https://github.com/opensourceteam10/opensource10-tetris-remake.git
 cd opensource10-tetris-remake
 ```
-
 2. 빌드
 ```bash
 mkdir build
