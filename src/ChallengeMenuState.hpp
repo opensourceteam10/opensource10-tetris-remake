@@ -1,13 +1,14 @@
 #ifndef CHALLENGEMENUSTATE_HPP
 #define CHALLENGEMENUSTATE_HPP
 
+#include "gamestate.hpp"
 #include "state.hpp"
 #include "button.hpp"
 #include "texture.hpp"
 #include <vector>
 
 // Challenge Mode 메뉴 선택 화면
-class ChallengeMenuState : public State
+class ChallengeMenuState : public GameState
 {
 public:
     ChallengeMenuState(InputManager *manager);

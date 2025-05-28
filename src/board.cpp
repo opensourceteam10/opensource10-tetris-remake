@@ -1,4 +1,5 @@
 #include "board.hpp"
+#include <algorithm>
 
 /*
  * ====================================
@@ -79,7 +80,9 @@ void Board::storePiece (Piece p)
 int Board::clearFullLines()
 {
     int linesCleared = 0;
-    for (int row = 0; row < config::playfield_height; ++row)
+    
+    // 아래부터 위로 검사하여 완성된 줄 찾기
+    for (int row = config::playfield_height - 1; row >= 0; --row)
     {
         bool isLineFull = true;
         for (int col = 0; col < config::playfield_width; ++col)
@@ -93,26 +96,15 @@ int Board::clearFullLines()
 
         if (isLineFull)
         {
-            for (int r = row; r > 0; --r)
-            {
-                for (int c = 0; c < config::playfield_width; ++c)
-                {
-                    board_state[r][c] = board_state[r-1][c];
-                }
-            }
-            for (int c = 0; c < config::playfield_width; ++c)
-            {
-                board_state[0][c] = BlockStatus::block_empty;
-            }
-
+            // 완성된 줄 삭제하고 위쪽 줄들을 아래로 이동
+            deleteLine(row);
             linesCleared++;
+            row++; // 같은 줄을 다시 검사 (위쪽 줄이 내려왔으므로)
         }
     }
 
     return linesCleared;
 }
-
-
 
 // True if the game has ended; Note: the row index starts from the top
 bool Board::isGameOver ()
@@ -138,11 +130,18 @@ bool Board::isGameOver ()
 // Clears a filled row and moves all other blocks properly
 void Board::deleteLine (int r)
 {
+    // r번째 줄을 삭제하고 위쪽 줄들을 아래로 이동
     for (int row = r; row > 0; row--)
     {
         for (int col = 0; col < config::playfield_width; col++)
         {
             board_state[row][col] = board_state[row-1][col];
         }
+    }
+    
+    // 맨 위 줄을 빈 줄로 만들기
+    for (int col = 0; col < config::playfield_width; col++)
+    {
+        board_state[0][col] = BlockStatus::block_empty;
     }
 }

@@ -8,7 +8,9 @@
 #include "state.hpp"
 #include "texture.hpp"
 
-// The state used when playing a Tetris game
+
+
+
 class GameState: public State
 {
 public:
@@ -20,6 +22,7 @@ public:
     void run() override;
     void update() override;
     void draw() override;
+    StateID nextStateID = STATE_NULL;
 
     protected:
     // 게임 상태 변수

@@ -3,7 +3,7 @@
 #include "config.hpp"
 #include <iostream>
 
-ChallengeMenuState::ChallengeMenuState(InputManager *manager) : State(manager), index(0)
+ChallengeMenuState::ChallengeMenuState(InputManager *manager) : GameState(manager), index(0)
 {
     titleTexture = nullptr;
     descriptionTexture = nullptr;
