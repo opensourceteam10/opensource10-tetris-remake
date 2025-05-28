@@ -2,10 +2,11 @@
 
 #include "tetromino_matrices.hpp"
 
-Piece::Piece (int p_piece_type, int p_rotation)
-{
-    p_piece_type = piece_type;
-    p_rotation = rotation;
+Piece::Piece(int p_piece_type, int p_rotation) {
+    piece_type = p_piece_type;
+    rotation = p_rotation;
+    r = 0;
+    c = 0;
 }
 
 Piece::Piece (const Piece &p)

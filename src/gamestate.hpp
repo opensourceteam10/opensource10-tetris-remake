@@ -21,7 +21,7 @@ public:
     void update() override;
     void draw() override;
 
-    private:
+    protected:
     // 게임 상태 변수
     enum GamePhase {GAME_STARTED, GAME_PLAYING, GAME_FINISHED};
     GamePhase currentPhase;

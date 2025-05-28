@@ -13,7 +13,7 @@
 #include "optionsstate.hpp"
 #include "pausedstate.hpp"
 #include "state.hpp"
-#include "LobbyState.hpp"
+#include "MultiState.hpp"
 
 /*
  * ====================================
@@ -154,14 +154,14 @@ void Game::pushPaused ()
 
 }
 
-void Game::pushLobby ()
-{
-    delete Game::getInstance()->mLobbyState;
-    Game::getInstance()->mLobbyState = new LobbyState(Game::getInstance()->mManager);
-    Game::getInstance()->mLobbyState->initialize();
-    Game:getInstance()->pushState(Game::getInstance()->mLobbyState);
-}
+void Game::pushMulti() {
+    Game* game = Game::getInstance(); // 싱글턴 인스턴스 얻기
 
+    delete game->mMultiState;
+    game->mMultiState = new MultiState(game->mManager);
+    game->mMultiState->initialize();
+    game->pushState(game->mMultiState);
+}
 // Goes back one state (by popping the state in the front)
 void Game::goBack ()
 {
