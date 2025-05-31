@@ -108,9 +108,7 @@ void Game::popState()
 {
     if (!mStates.empty())
     {
-        mStates.back()->exit();
-        delete mStates.back();
-        mStates.pop_back();
+                mStates.pop_back();
     }
 }
 
