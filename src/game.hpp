@@ -27,13 +27,13 @@ public:
     friend class OptionsState;
     static Game* getInstance();
 
-    bool initialize ();
-    void exit ();
-    void run ();
+    bool initialize();
+    void exit();
+    void run();
     
-    void popState ();
-    void pushState (State *s);
-    void changeState (State *s);
+    void popState();
+    void pushState(State *s);
+    void changeState(State *s);
 
     static void pushChallengeMenu();
     static void pushOptions();
@@ -50,7 +50,7 @@ public:
     bool isGameExiting();
 
     Renderer *mRenderer;
-    SDL_Window *mWindow;  // public으로 이동 (OptionsState에서 접근 필요)
+    SDL_Window *mWindow;
 
 private:
     static Game *mInstance;

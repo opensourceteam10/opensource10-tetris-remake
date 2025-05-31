@@ -7,6 +7,7 @@
 
 SpeedChallengeState::SpeedChallengeState(InputManager *manager) : GameState(manager)
 {
+    // 기본값 설정
     challengeTimeLimit = 180.0f;  // 3분
     remainingTime = challengeTimeLimit;
     timeStarted = 0;
@@ -20,6 +21,7 @@ SpeedChallengeState::SpeedChallengeState(InputManager *manager) : GameState(mana
     autoLineClearActive = false;
     autoLineClearTimer = 0.0f;
     
+    // 텍스처 포인터들을 nullptr로 초기화
     timerTexture = nullptr;
     speedTexture = nullptr;
     powerupTexture = nullptr;
@@ -31,23 +33,54 @@ SpeedChallengeState::SpeedChallengeState(InputManager *manager) : GameState(mana
 
 SpeedChallengeState::~SpeedChallengeState()
 {
-    if (timerTexture) delete timerTexture;
-    if (speedTexture) delete speedTexture;
-    if (powerupTexture) delete powerupTexture;
-    if (finalScoreTexture) delete finalScoreTexture;
+    // Speed Challenge 전용 텍스처들만 해제
+    // 부모 클래스는 건드리지 않음
+    cleanupSpeedChallengeTextures();
+}
+
+void SpeedChallengeState::cleanupSpeedChallengeTextures()
+{
+    if (timerTexture) {
+        delete timerTexture;
+        timerTexture = nullptr;
+    }
+    if (speedTexture) {
+        delete speedTexture;
+        speedTexture = nullptr;
+    }
+    if (powerupTexture) {
+        delete powerupTexture;
+        powerupTexture = nullptr;
+    }
+    if (finalScoreTexture) {
+        delete finalScoreTexture;
+        finalScoreTexture = nullptr;
+    }
 }
 
 void SpeedChallengeState::initialize()
 {
-    // 부모 클래스 초기화
+    // 부모 클래스 초기화 먼저 호출
     GameState::initialize();
     
     // Speed Challenge 전용 초기화
     timeStarted = SDL_GetTicks();
     remainingTime = challengeTimeLimit;
     dropInterval = baseDropInterval;
+    challengeCompleted = false;
+    finalScore = 0;
+    isTimeUp = false;
     
-    // 텍스처 초기화
+    doubleScoreActive = false;
+    doubleScoreTimer = 0.0f;
+    autoLineClearActive = false;
+    autoLineClearTimer = 0.0f;
+    speedMultiplier = 1.0f;
+    
+    // 기존 Speed Challenge 텍스처들만 정리
+    cleanupSpeedChallengeTextures();
+    
+    // 새로 할당
     timerTexture = new Texture();
     speedTexture = new Texture();
     powerupTexture = new Texture();
@@ -78,8 +111,46 @@ void SpeedChallengeState::run()
             return;
         }
         
-        // 부모 클래스의 게임 로직 실행
-        GameState::run();
+        // 입력 처리를 직접 관리 (부모 클래스 run() 호출 대신)
+        if (mInputManager->isGameExiting())
+        {
+            nextStateID = STATE_EXIT;
+            return;
+        }
+        
+        bool shouldReturn = false;
+        while (mInputManager->pollAction())
+        {
+            if (mInputManager->getAction() == Action::back)
+            {
+                Game::getInstance()->popState();
+                return;  // 즉시 반환
+            }
+            else if (mInputManager->getAction() == Action::pause)
+            {
+                currentPhase = GAME_STARTED;
+                game_just_started = true;
+                Game::getInstance()->pushPaused();
+                return;  // 즉시 반환
+            }
+            else
+            {
+                handleEvent(mInputManager->getAction());
+            }
+        }
+        
+        // 자동 드롭 처리
+        time_snap2 = SDL_GetTicks();
+        if (time_snap2 - time_snap1 >= static_cast<unsigned long long>(dropInterval * 1000))
+        {
+            movePieceDown();
+            time_snap1 = SDL_GetTicks();
+        }
+        
+        // 화면 그리기
+        Game::getInstance()->mRenderer->clearScreen();
+        draw();
+        Game::getInstance()->mRenderer->updateScreen();
     }
     else
     {
@@ -93,8 +164,8 @@ void SpeedChallengeState::run()
             }
             if (mInputManager->getAction() == Action::back || mInputManager->getAction() == Action::select)
             {
-                Game::getInstance()->popState(); // 챌린지 메뉴로 돌아가기
-                break;
+                Game::getInstance()->popState();
+                return;  // 즉시 반환
             }
         }
         
@@ -152,83 +223,36 @@ void SpeedChallengeState::updatePowerups()
             std::cout << "💫 Double Score ended!" << std::endl;
         }
     }
-
-
     
     // 자동 라인 클리어 파워업 타이머
     if (autoLineClearActive)
-{
-    autoLineClearTimer -= deltaTime;
-    if (autoLineClearTimer <= 0)
     {
-        autoLineClearActive = false;
-        std::cout << "Auto Line Clear ended!" << std::endl;
-    }
-    else
-    {
-        // 2초마다 자동 클리어 실행
-        static float autoLineClearCooldown = 0;
-        autoLineClearCooldown -= deltaTime;
-        if (autoLineClearCooldown <= 0)
+        autoLineClearTimer -= deltaTime;
+        if (autoLineClearTimer <= 0)
         {
-            std::cout << "Auto clear triggered!" << std::endl;  // 디버그 메시지
-            
-            // 방법 1: 아래쪽 줄들 중에서 가장 많이 찬 줄 클리어
-            performAutoLineClear();
-            
-            autoLineClearCooldown = 2.0f;
+            autoLineClearActive = false;
+            std::cout << "Auto Line Clear ended!" << std::endl;
+        }
+        else
+        {
+            // 2초마다 자동 클리어 실행
+            static float autoLineClearCooldown = 0;
+            autoLineClearCooldown -= deltaTime;
+            if (autoLineClearCooldown <= 0)
+            {
+                performAutoLineClear();
+                autoLineClearCooldown = 2.0f;
+            }
         }
     }
-}
 }
 
 void SpeedChallengeState::performAutoLineClear()
 {
-    // 아래쪽 5줄 중에서 가장 많이 찬 줄 찾기
-    int bestRow = -1;
-    int maxBlocks = 0;
-    
-    for (int row = config::playfield_height - 5; row < config::playfield_height; row++)
-    {
-        if (row < 0) continue;  // 경계 체크
-        
-        int filledBlocks = 0;
-        for (int col = 0; col < config::playfield_width; col++)
-        {
-            if (!board->isBlockFree(row, col))
-            {
-                filledBlocks++;
-            }
-        }
-        
-        if (filledBlocks > maxBlocks && filledBlocks >= 5)  // 최소 5개 이상 찬 줄
-        {
-            maxBlocks = filledBlocks;
-            bestRow = row;
-        }
-    }
-    
-    if (bestRow != -1)
-    {
-        std::cout << "Auto clearing row " << bestRow << " with " << maxBlocks << " blocks" << std::endl;
-        
-        // 해당 줄을 강제로 완전히 채우기 (Board 클래스 수정 없이)
-        // 임시 방법: clearFullLines() 호출 후 보너스 점수만 주기
-        int clearedBefore = board->clearFullLines();
-        score += 300;  // 자동 클리어 보너스
-        
-        std::cout << "Auto clear bonus: +300 points!" << std::endl;
-    }
-    else
-    {
-        // 클리어할 줄이 없으면 작은 보너스만
-        score += 50;
-        std::cout << "Auto clear bonus: +50 points!" << std::endl;
-    }
+    // 간단한 보너스 점수만 주기 (복잡한 라인 조작 없이)
+    score += 50;
+    std::cout << "Auto clear bonus: +50 points!" << std::endl;
 }
-
-
-
 
 void SpeedChallengeState::spawnPowerup()
 {
@@ -252,14 +276,14 @@ void SpeedChallengeState::activateDoubleScore()
 {
     doubleScoreActive = true;
     doubleScoreTimer = 10.0f; // 10초간 지속
-    std::cout << "Double Score activated for 10 seconds!" << std::endl;
+    std::cout << "💫 Double Score activated for 10 seconds!" << std::endl;
 }
 
 void SpeedChallengeState::activateAutoLineClear()
 {
     autoLineClearActive = true;
     autoLineClearTimer = 15.0f; // 15초간 지속
-    std::cout << "Auto Line Clear activated for 15 seconds!" << std::endl;
+    std::cout << "🚀 Auto Line Clear activated for 15 seconds!" << std::endl;
 }
 
 void SpeedChallengeState::endChallenge()
@@ -283,6 +307,8 @@ void SpeedChallengeState::endChallenge()
 
 void SpeedChallengeState::drawTimer()
 {
+    if (!timerTexture) return;
+    
     // 남은 시간을 MM:SS 형식으로 표시
     int minutes = (int)remainingTime / 60;
     int seconds = (int)remainingTime % 60;
@@ -291,8 +317,8 @@ void SpeedChallengeState::drawTimer()
     ss << "Time: " << std::setfill('0') << std::setw(2) << minutes 
        << ":" << std::setfill('0') << std::setw(2) << seconds;
     
-    timerTexture->loadFromText(ss.str(), Game::getInstance()->mRenderer->mediumFont, 
-                              remainingTime < 30 ? SDL_Color{255, 0, 0, 255} : config::default_text_color);
+    SDL_Color textColor = remainingTime < 30 ? SDL_Color{255, 0, 0, 255} : config::default_text_color;
+    timerTexture->loadFromText(ss.str(), Game::getInstance()->mRenderer->mediumFont, textColor);
     timerTexture->render(450, 20);
 }
 
@@ -309,7 +335,7 @@ void SpeedChallengeState::drawPowerupStatus()
         powerupStatus += "AUTO CLEAR ";
     }
     
-    if (!powerupStatus.empty())
+    if (!powerupStatus.empty() && powerupTexture)
     {
         powerupTexture->loadFromText(powerupStatus, Game::getInstance()->mRenderer->mediumFont, 
                                    SDL_Color{255, 255, 0, 255});
@@ -317,10 +343,13 @@ void SpeedChallengeState::drawPowerupStatus()
     }
     
     // 속도 표시
-    std::stringstream speedSS;
-    speedSS << "Speed: x" << std::fixed << std::setprecision(1) << speedMultiplier;
-    speedTexture->loadFromText(speedSS.str(), Game::getInstance()->mRenderer->mediumFont, config::default_text_color);
-    speedTexture->render(450, 50);
+    if (speedTexture)
+    {
+        std::stringstream speedSS;
+        speedSS << "Speed: x" << std::fixed << std::setprecision(1) << speedMultiplier;
+        speedTexture->loadFromText(speedSS.str(), Game::getInstance()->mRenderer->mediumFont, config::default_text_color);
+        speedTexture->render(450, 50);
+    }
 }
 
 void SpeedChallengeState::checkState()
@@ -357,7 +386,6 @@ void SpeedChallengeState::checkState()
     while (linesCleared >= 1) {
         stage++;
         linesCleared--;
-        // Speed Challenge에서는 dropInterval을 speedMultiplier로 관리
         std::cout << "Stage Up! Now at Stage " << stage << std::endl;
     }
 
@@ -370,11 +398,9 @@ void SpeedChallengeState::checkState()
 
 void SpeedChallengeState::drawFinalResults()
 {
-    // 최종 결과 화면
-    std::stringstream resultSS;
-    resultSS << "SPEED CHALLENGE COMPLETED!\n\n";
-    resultSS << "Final Score: " << finalScore << "\n\n";
+    if (!finalScoreTexture) return;
     
+    // 최종 결과 화면
     std::string grade;
     if (finalScore >= 50000) grade = "S";
     else if (finalScore >= 30000) grade = "A";  
@@ -382,7 +408,10 @@ void SpeedChallengeState::drawFinalResults()
     else if (finalScore >= 10000) grade = "C";
     else grade = "D";
     
-    resultSS << "Grade: " << grade << "\n\n";
+    std::stringstream resultSS;
+    resultSS << "SPEED CHALLENGE COMPLETED!" << std::endl << std::endl;
+    resultSS << "Final Score: " << finalScore << std::endl << std::endl;
+    resultSS << "Grade: " << grade << std::endl << std::endl;
     resultSS << "Press BACK or ENTER to continue";
     
     finalScoreTexture->loadFromText(resultSS.str(), Game::getInstance()->mRenderer->mediumFont, config::default_text_color);

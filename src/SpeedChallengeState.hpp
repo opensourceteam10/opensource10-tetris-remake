@@ -33,7 +33,7 @@ private:
     bool autoLineClearActive;        // 자동 라인 클리어 활성화
     float autoLineClearTimer;        // 자동 라인 클리어 지속 시간
     
-    // UI 텍스처들
+    // UI 텍스처들 (GameState와 분리)
     Texture *timerTexture;           // 시간 표시
     Texture *speedTexture;           // 속도 표시
     Texture *powerupTexture;         // 파워업 표시
@@ -55,6 +55,7 @@ private:
     void drawTimer();                // 타이머 그리기
     void drawPowerupStatus();        // 파워업 상태 그리기
     void drawFinalResults();         // 최종 결과 그리기
+    void cleanupSpeedChallengeTextures(); // Speed Challenge 전용 텍스처 정리
     
     // 파워업 확률 (%)
     static const int POWERUP_SPAWN_CHANCE = 15; // 라인 클리어 시 15% 확률
