@@ -8,4 +8,7 @@ todo.txt
 .vs
 .vscode
 .VSCodeCounter
-CMakeSettings.json
+CMakeSettings.jsonbuild/
+.DS_Store
+*.o
+*.exe

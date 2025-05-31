@@ -28,34 +28,53 @@ const SDL_Color stageColors[] = {
 };
 const int numStageColors = sizeof(stageColors) / sizeof(stageColors[0]);
 
-
- GameState::GameState (InputManager *manager) : State(manager),
+GameState::GameState (InputManager *manager) : State(manager),
  stage(1),
  linesCleared(0),
  dropInterval(0.8f),
  dropTimer(0.0f),
- stageTextTexture(nullptr)
-{ }
-
+ stageTextTexture(nullptr),
+ isExited(false)  // 초기화 추가
+{
+    // 모든 포인터를 nullptr로 초기화
+    board = nullptr;
+    countdown_texture = nullptr;
+    gameover_text = nullptr;
+    tetrominoSprites = nullptr;
+    playfieldFrame = nullptr;
+    stageTextTexture = nullptr;
+    scoreTextTexture = nullptr;
+}
 
 GameState::~GameState ()
 {
-    exit();
+    if (!isExited) {
+        exit();
+    }
 }
 
 void GameState::initialize ()
 {
     currentPhase = GAME_STARTED;
+    isExited = false;  // 재초기화 시 플래그 리셋
+    
+    // 기존 리소스 정리
+    cleanupTextures();
+    if (board) {
+        delete board;
+        board = nullptr;
+    }
+    
+    // 새로 할당
     board = new Board;
     srand(time(0));
     hold_block_first_time = true;
     hold_block_used = false;
+    
     stageTextTexture = new Texture();
     score = 0;
     scoreTextTexture = new Texture();
 
-
-    
     // Get random first piece
     nextPiece.piece_type = getRandom(0, 6);
     nextPiece.rotation = 0;                     // Pieces must always start flat according to the offical Tetris guidelines
@@ -69,13 +88,10 @@ void GameState::initialize ()
     gameover_text->loadFromText("Game Over!", Game::getInstance()->mRenderer->mediumFont, config::default_text_color);
     tetrominoSprites = new Texture ();
     playfieldFrame = new Texture ();
-    #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    tetrominoSprites->loadFromImage("../../assets/tetrominoSprites.png");
-    playfieldFrame->loadFromImage("../../assets/playfieldFrame.png");
-    #else
-    tetrominoSprites->loadFromImage("../assets/tetrominoSprites.png");
-    playfieldFrame->loadFromImage("../assets/playfieldFrame.png");
-    #endif
+    
+    // 통일된 경로 사용 (CMake가 assets를 복사했으므로)
+    tetrominoSprites->loadFromImage("tetrominoSprites.png");
+    playfieldFrame->loadFromImage("playfieldFrame.png");
 
     // Create the right clips sprites
     for (int i = 0; i < 7; i++)
@@ -97,15 +113,45 @@ void GameState::initialize ()
 
 void GameState::exit ()
 {
-    delete board;
-    delete countdown_texture;
-    delete gameover_text;
-    delete tetrominoSprites;
-    delete playfieldFrame;
-    delete stageTextTexture;
-    delete scoreTextTexture;
+    if (isExited) return;  // 이미 정리되었다면 무시
+    
+    isExited = true;
+    
+    // 안전한 정리
+    cleanupTextures();
+    
+    if (board) {
+        delete board;
+        board = nullptr;
+    }
+}
 
-
+void GameState::cleanupTextures() 
+{
+    if (countdown_texture) {
+        delete countdown_texture;
+        countdown_texture = nullptr;
+    }
+    if (gameover_text) {
+        delete gameover_text;
+        gameover_text = nullptr;
+    }
+    if (tetrominoSprites) {
+        delete tetrominoSprites;
+        tetrominoSprites = nullptr;
+    }
+    if (playfieldFrame) {
+        delete playfieldFrame;
+        playfieldFrame = nullptr;
+    }
+    if (stageTextTexture) {
+        delete stageTextTexture;
+        stageTextTexture = nullptr;
+    }
+    if (scoreTextTexture) {
+        delete scoreTextTexture;
+        scoreTextTexture = nullptr;
+    }
 }
 
 void GameState::run ()
@@ -132,7 +178,7 @@ void GameState::run ()
                     if (mInputManager->getAction() == Action::back)
                     {
                         Game::getInstance()->popState();
-                        break;                                                  // Pop the state only once even if Action::back is pressed twice
+                        return;  // 즉시 반환하여 추가 실행 방지
                     }
                 }
                 Game::getInstance()->mRenderer->clearScreen();
@@ -161,18 +207,22 @@ void GameState::run ()
             }
             else if (!isGameOver())
             {
+                bool shouldReturn = false;  // 상태 변경 플래그
                 while (mInputManager->pollAction())
                 {
                     if (mInputManager->getAction() == Action::back)
                     {
                         Game::getInstance()->popState();
-                        break;                                                // Pop the state only once even if Action::back is pressed twice
+                        shouldReturn = true;
+                        break;  // 즉시 루프 탈출
                     }
                     else
                     {
                         handleEvent(mInputManager->getAction());
                     }
                 }
+                
+                if (shouldReturn) return;  // 상태가 변경되었으면 즉시 반환
                 
                 time_snap2 = SDL_GetTicks();
                 if (time_snap2 - time_snap1 >= static_cast<unsigned long long>(dropInterval * 1000))
@@ -201,7 +251,7 @@ void GameState::run ()
                     if (mInputManager->getAction() == Action::back)
                     {
                         Game::getInstance()->popState();
-                        break;                                          // Pop the state only once even if Action::back is pressed twice
+                        return;  // 즉시 반환
                     }
                 }
                 Game::getInstance()->mRenderer->clearScreen();
@@ -224,13 +274,8 @@ void GameState::update ()
     // We don't use this function in this state, the work is done by handleEvent() 
 }
 
-
-
 void GameState::draw ()
 {
-    
-    
-
     // 현재 스테이지에 해당하는 색 선택
     int colorIndex = std::min(stage - 1, numStageColors - 1);
     SDL_Color bgColor = stageColors[colorIndex];
@@ -245,7 +290,6 @@ void GameState::draw ()
         drawHoldPiece(holdPiece);
     drawNextPiece(nextPiece);
 }
-
 
 /*
  * ====================================
@@ -310,14 +354,12 @@ void GameState::checkState ()
         std::cout << "Stage Up! Now at Stage " << stage << ", drop interval = " << dropInterval << "s\n";
     }
 
-
     if (!board->isGameOver())
     {
         createNewPiece();
     }
     hold_block_used = false;                // We can now use the hold block again
 }
-
 
 void GameState::handleEvent (Action action)
 {
@@ -419,7 +461,13 @@ void GameState::handleEvent (Action action)
             currentPhase = GAME_STARTED;
             game_just_started = true;
             Game::getInstance()->pushPaused();
+            // pause 처리 후에는 더 이상 진행하지 않음
+            break;
         }
+        
+        // back 액션은 여기서 처리하지 않음 (run()에서 직접 처리)
+        default:
+            break;
     }
 }
 
@@ -476,8 +524,6 @@ void GameState::drawBoard ()
     std::string scoreText = "Score: " + std::to_string(score);
     scoreTextTexture->loadFromText(scoreText, Game::getInstance()->mRenderer->mediumFont, config::default_text_color);
     scoreTextTexture->render(20, 50); // 스테이지 텍스트 아래
-
-
 }
 
 void GameState::drawCurrentPiece (Piece p)

@@ -2,15 +2,50 @@
 #include "game.hpp"
 
 MultiState::MultiState(InputManager* manager) : GameState(manager), showResult(false), winnerIdx(-1) {
+    // 포인터들을 nullptr로 초기화만
     for (int i = 0; i < 2; ++i) {
-        boards[i] = new Board();
-        currentPieces[i] = Piece(0, 0);
-        nextPieces[i] = Piece(0, 0);
+        boards[i] = nullptr;
+        tetrominoSprites[i] = nullptr;
+        playfieldFrame[i] = nullptr;
         scores[i] = 0;
         isGameOver[i] = false;
+        lastDropTime[i] = 0;
+    }
+    winText = nullptr;
+    retryButton = nullptr;
+    backButton = nullptr;
+}
 
+MultiState::~MultiState() { 
+    exit(); 
+}
+
+void MultiState::initialize() {
+    showResult = false;
+    winnerIdx = -1;
+    
+    for (int i = 0; i < 2; ++i) {
+        // 기존 객체가 있다면 삭제
+        if (boards[i]) {
+            delete boards[i];
+            boards[i] = nullptr;
+        }
+        if (tetrominoSprites[i]) {
+            delete tetrominoSprites[i];
+            tetrominoSprites[i] = nullptr;
+        }
+        if (playfieldFrame[i]) {
+            delete playfieldFrame[i];
+            playfieldFrame[i] = nullptr;
+        }
+        
+        // 새로 할당
+        boards[i] = new Board();
         tetrominoSprites[i] = new Texture();
         playfieldFrame[i] = new Texture();
+        
+        scores[i] = 0;
+        isGameOver[i] = false;
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
         tetrominoSprites[i]->loadFromImage("../../assets/tetrominoSprites.png");
@@ -20,6 +55,7 @@ MultiState::MultiState(InputManager* manager) : GameState(manager), showResult(f
         playfieldFrame[i]->loadFromImage("../assets/playfieldFrame.png");
 #endif
 
+        // 클립 설정
         for (int j = 0; j < 7; ++j) {
             tetrominoSpriteClips[i][j].x = 16 * j;
             tetrominoSpriteClips[i][j].y = 0;
@@ -32,27 +68,29 @@ MultiState::MultiState(InputManager* manager) : GameState(manager), showResult(f
             playfieldFrameClips[i][j].w = config::frame_sprite_size;
             playfieldFrameClips[i][j].h = config::frame_sprite_size;
         }
-        lastDropTime[i] = SDL_GetTicks();
-    }
-    winText = new Texture();
-    retryButton = new Texture();
-    backButton = new Texture();
-}
-
-MultiState::~MultiState() { exit(); }
-
-void MultiState::initialize() {
-    showResult = false;
-    winnerIdx = -1;
-    for (int i = 0; i < 2; ++i) {
-        if (boards[i]) delete boards[i];
-        boards[i] = new Board();
-        scores[i] = 0;
-        isGameOver[i] = false;
+        
         nextPieces[i] = Piece(getRandom(0, 6), 0);
         spawnNewPiece(i);
         lastDropTime[i] = SDL_GetTicks();
     }
+    
+    // UI 텍스처들 초기화
+    if (winText) {
+        delete winText;
+        winText = nullptr;
+    }
+    if (retryButton) {
+        delete retryButton;
+        retryButton = nullptr;
+    }
+    if (backButton) {
+        delete backButton;
+        backButton = nullptr;
+    }
+    
+    winText = new Texture();
+    retryButton = new Texture();
+    backButton = new Texture();
 }
 
 void MultiState::spawnNewPiece(int playerIdx) {
@@ -80,55 +118,65 @@ void MultiState::spawnNewPiece(int playerIdx) {
 }
 
 void MultiState::run() {
-    bool quit = false;
-    while (!quit) {
-        SDL_Event event;
-        Action actionP1 = Action::stay_idle;
-        Action actionP2 = Action::stay_idle;
-        int mouseX = 0, mouseY = 0;
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) return;
-            if (event.type == SDL_KEYDOWN) {
-                if (event.key.keysym.sym == SDLK_ESCAPE) {
-                    currentPhase = GAME_STARTED;
-                    game_just_started = true;
-                    Game::getInstance()->pushPaused();
-                    return;
-                }
-                // Player 1: WASD
-                switch (event.key.keysym.sym) {
-                    case SDLK_a: actionP1 = Action::move_left; break;
-                    case SDLK_d: actionP1 = Action::move_right; break;
-                    case SDLK_s: actionP1 = Action::move_down; break;
-                    case SDLK_w: actionP1 = Action::rotate; break;
-                    case SDLK_LCTRL: actionP1 = Action::drop; break;
-                }
-                // Player 2: 방향키
-                switch (event.key.keysym.sym) {
-                    case SDLK_LEFT: actionP2 = Action::move_left; break;
-                    case SDLK_RIGHT: actionP2 = Action::move_right; break;
-                    case SDLK_DOWN: actionP2 = Action::move_down; break;
-                    case SDLK_UP: actionP2 = Action::rotate; break;
-                    case SDLK_RCTRL: actionP2 = Action::drop; break;
-                }
+    SDL_Event event;
+    Action actionP1 = Action::stay_idle;
+    Action actionP2 = Action::stay_idle;
+    int mouseX = 0, mouseY = 0;
+    
+    // 이벤트 처리
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) {
+            Game::getInstance()->exit();
+            return;
+        }
+        
+        if (event.type == SDL_KEYDOWN) {
+            if (event.key.keysym.sym == SDLK_ESCAPE) {
+                // ESC 키로 메뉴로 돌아가기
+                Game::getInstance()->popState();
+                return;
             }
-            if (event.type == SDL_MOUSEBUTTONDOWN && showResult) {
-                SDL_GetMouseState(&mouseX, &mouseY);
-                if (isMouseOver(320, 350, 120, 40, mouseX, mouseY)) initialize();
-                if (isMouseOver(320, 400, 220, 40, mouseX, mouseY)) {
-                    Game::getInstance()->popState();
-                    return;
-                }
+            
+            // Player 1: WASD
+            switch (event.key.keysym.sym) {
+                case SDLK_a: actionP1 = Action::move_left; break;
+                case SDLK_d: actionP1 = Action::move_right; break;
+                case SDLK_s: actionP1 = Action::move_down; break;
+                case SDLK_w: actionP1 = Action::rotate; break;
+                case SDLK_LCTRL: actionP1 = Action::drop; break;
+            }
+            
+            // Player 2: 방향키
+            switch (event.key.keysym.sym) {
+                case SDLK_LEFT: actionP2 = Action::move_left; break;
+                case SDLK_RIGHT: actionP2 = Action::move_right; break;
+                case SDLK_DOWN: actionP2 = Action::move_down; break;
+                case SDLK_UP: actionP2 = Action::rotate; break;
+                case SDLK_RCTRL: actionP2 = Action::drop; break;
             }
         }
-        if (!showResult) {
-            if (actionP1 != Action::stay_idle) handleEvent(0, actionP1);
-            if (actionP2 != Action::stay_idle) handleEvent(1, actionP2);
-            update();
+        
+        if (event.type == SDL_MOUSEBUTTONDOWN && showResult) {
+            SDL_GetMouseState(&mouseX, &mouseY);
+            if (isMouseOver(320, 350, 120, 40, mouseX, mouseY)) {
+                initialize(); // 재시작
+            }
+            if (isMouseOver(320, 400, 220, 40, mouseX, mouseY)) {
+                Game::getInstance()->popState(); // 메뉴로 돌아가기
+                return;
+            }
         }
-        draw();
-        SDL_Delay(16);
     }
+    
+    // 게임 로직 업데이트
+    if (!showResult) {
+        if (actionP1 != Action::stay_idle) handleEvent(0, actionP1);
+        if (actionP2 != Action::stay_idle) handleEvent(1, actionP2);
+        update();
+    }
+    
+    // 화면 그리기
+    draw();
 }
 
 void MultiState::handleEvent(int playerIdx, Action action) {
@@ -307,12 +355,29 @@ bool MultiState::isMouseOver(int x, int y, int w, int h, int mx, int my) {
 
 void MultiState::exit() {
     for (int i = 0; i < 2; ++i) {
-        if (boards[i]) { delete boards[i]; boards[i] = nullptr; }
-        if (tetrominoSprites[i]) { delete tetrominoSprites[i]; tetrominoSprites[i] = nullptr; }
-        if (playfieldFrame[i]) { delete playfieldFrame[i]; playfieldFrame[i] = nullptr; }
+        if (boards[i]) { 
+            delete boards[i]; 
+            boards[i] = nullptr; 
+        }
+        if (tetrominoSprites[i]) { 
+            delete tetrominoSprites[i]; 
+            tetrominoSprites[i] = nullptr; 
+        }
+        if (playfieldFrame[i]) { 
+            delete playfieldFrame[i]; 
+            playfieldFrame[i] = nullptr; 
+        }
     }
-    if (winText) { delete winText; winText = nullptr; }
-    if (retryButton) { delete retryButton; retryButton = nullptr; }
-    if (backButton) { delete backButton; backButton = nullptr; }
+    if (winText) { 
+        delete winText; 
+        winText = nullptr; 
+    }
+    if (retryButton) { 
+        delete retryButton; 
+        retryButton = nullptr; 
+    }
+    if (backButton) { 
+        delete backButton; 
+        backButton = nullptr; 
+    }
 }
-

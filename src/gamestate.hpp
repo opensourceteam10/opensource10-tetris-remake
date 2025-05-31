@@ -8,9 +8,6 @@
 #include "state.hpp"
 #include "texture.hpp"
 
-
-
-
 class GameState: public State
 {
 public:
@@ -24,7 +21,7 @@ public:
     void draw() override;
     StateID nextStateID = STATE_NULL;
 
-    protected:
+protected:
     // 게임 상태 변수
     enum GamePhase {GAME_STARTED, GAME_PLAYING, GAME_FINISHED};
     GamePhase currentPhase;
@@ -60,6 +57,8 @@ public:
     int score = 0;
     Texture* scoreTextTexture = nullptr;
 
+    // 메모리 안전성을 위한 플래그 (추가)
+    bool isExited = false;
 
     // 주요 메서드
     bool isGameOver();
@@ -76,7 +75,8 @@ public:
 
     int getRandom(int lower_limit, int upper_limit);
 
-
+    // 안전한 정리를 위한 헬퍼 메서드 (추가)
+    void cleanupTextures();
 };
 
 #endif // GAMESTATE_HPP

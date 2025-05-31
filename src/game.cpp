@@ -93,7 +93,6 @@ void Game::exit()
     SDL_Quit();
     TTF_Quit();
 }
-
 void Game::run()
 {
     if (!mStates.empty())
@@ -101,6 +100,9 @@ void Game::run()
         mStates.back()->run();
     }
 }
+
+
+
 
 void Game::popState()
 {

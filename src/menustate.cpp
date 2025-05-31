@@ -5,7 +5,7 @@
 MenuState::MenuState(InputManager *manager)
     : State(manager)
 {
-    title_text = nullptr;  // titleTexture 대신 title_text 사용
+    title_text = nullptr;
 }
 
 MenuState::~MenuState()
@@ -19,10 +19,21 @@ void MenuState::initialize()
     title_text = new Texture();
     title_text->loadFromText("PixelTetris!", Game::getInstance()->mRenderer->bigFont, config::default_text_color);
 
-    // MULTI 버튼 제거 - 3개 버튼만 유지
-    mButtons.push_back(new Button("assets/button-play.png", &Game::pushModeSelect, (config::logical_window_width - 80) / 2, 130));
-    mButtons.push_back(new Button("assets/button-options.png", &Game::pushOptions, (config::logical_window_width - 80) / 2, 180));
-    mButtons.push_back(new Button("assets/button-exit.png", &Game::goBack, (config::logical_window_width - 80) / 2, 230));
+    // 기존 버튼들 정리
+    for (auto button : mButtons) {
+        delete button;
+    }
+    mButtons.clear();
+
+    // 텍스트 버튼들 생성 - 이미지 파일 대신 텍스트 사용
+    int buttonWidth = 200;
+    int buttonHeight = 50;
+    int centerX = (config::logical_window_width - buttonWidth) / 2;
+    
+    // Button(텍스트, 콜백함수, x좌표, y좌표, 너비, 높이)
+    mButtons.push_back(new Button("PLAY", &Game::pushModeSelect, centerX, 130, buttonWidth, buttonHeight));
+    mButtons.push_back(new Button("OPTIONS", &Game::pushOptions, centerX, 190, buttonWidth, buttonHeight));
+    mButtons.push_back(new Button("EXIT", &Game::goBack, centerX, 250, buttonWidth, buttonHeight));
     
     index = 0;
 }
@@ -33,7 +44,7 @@ void MenuState::exit()
         delete button;
     mButtons.clear();
 
-    if (title_text)  // titleTexture 대신 title_text 사용
+    if (title_text)
     {
         delete title_text;
         title_text = nullptr;
@@ -76,7 +87,7 @@ void MenuState::draw()
 {
     Game::getInstance()->mRenderer->clearScreen();
 
-    if (title_text)  // titleTexture 대신 title_text 사용
+    if (title_text)
     {
         title_text->renderCentered(config::logical_window_width / 2, 50);
     }
