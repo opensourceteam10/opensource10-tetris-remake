@@ -108,8 +108,6 @@ void Game::popState()
 {
     if (!mStates.empty())
     {
-        mStates.back()->exit();
-        delete mStates.back();
         mStates.pop_back();
     }
 }
@@ -212,5 +210,12 @@ void Game::goDoubleBack()
 
 bool Game::isGameExiting()
 {
-    return mManager->isGameExiting();
+     if (mStates.empty())
+    {
+        return true;
+    }
+    else
+    {
+        return mStates.back()->nextStateID == STATE_EXIT;
+    }
 }
