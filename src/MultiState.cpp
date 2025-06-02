@@ -12,12 +12,12 @@ MultiState::MultiState(InputManager* manager) : GameState(manager), showResult(f
         lastDropTime[i] = 0;
     }
     winText = nullptr;
-    retryButton = nullptr;
-    backButton = nullptr;
 }
 
 MultiState::~MultiState() { 
-    exit(); 
+     if (!isExited) {
+        exit();
+    } 
 }
 
 void MultiState::initialize() {
@@ -79,18 +79,8 @@ void MultiState::initialize() {
         delete winText;
         winText = nullptr;
     }
-    if (retryButton) {
-        delete retryButton;
-        retryButton = nullptr;
-    }
-    if (backButton) {
-        delete backButton;
-        backButton = nullptr;
-    }
     
     winText = new Texture();
-    retryButton = new Texture();
-    backButton = new Texture();
 }
 
 void MultiState::spawnNewPiece(int playerIdx) {
@@ -111,8 +101,7 @@ void MultiState::spawnNewPiece(int playerIdx) {
                 Game::getInstance()->mRenderer->mediumFont,
                 {0, 128, 0, 255}
             );
-            retryButton->loadFromText("Retry", Game::getInstance()->mRenderer->mediumFont, {0,0,0,255});
-            backButton->loadFromText("Back to Menu", Game::getInstance()->mRenderer->mediumFont, {0,0,0,255});
+            
         }
     }
 }
@@ -153,17 +142,6 @@ void MultiState::run() {
                 case SDLK_DOWN: actionP2 = Action::move_down; break;
                 case SDLK_UP: actionP2 = Action::rotate; break;
                 case SDLK_RCTRL: actionP2 = Action::drop; break;
-            }
-        }
-        
-        if (event.type == SDL_MOUSEBUTTONDOWN && showResult) {
-            SDL_GetMouseState(&mouseX, &mouseY);
-            if (isMouseOver(320, 350, 120, 40, mouseX, mouseY)) {
-                initialize(); // 재시작
-            }
-            if (isMouseOver(320, 400, 220, 40, mouseX, mouseY)) {
-                Game::getInstance()->popState(); // 메뉴로 돌아가기
-                return;
             }
         }
     }
@@ -270,7 +248,7 @@ void MultiState::drawBoard(int playerIdx, int offsetX, int offsetY) {
         {0, 0, 0, 255}
     );
     const int textX = offsetX + (config::block_size * config::playfield_width)/2 - playerScoreTexture.getWidth()/2;
-    const int textY = offsetY - 40;
+    const int textY = offsetY - 40 + (2 * config::block_size);
     playerScoreTexture.render(textX, textY);
 
     // 좌우 프레임
@@ -345,12 +323,6 @@ void MultiState::drawCurrentPiece(int playerIdx, int offsetX, int offsetY) {
 void MultiState::drawResultScreen() {
     Renderer* renderer = Game::getInstance()->mRenderer;
     winText->render(config::logical_window_width/2 - winText->getWidth()/2, 200);
-    retryButton->render(320, 350);
-    backButton->render(320, 400);
-}
-
-bool MultiState::isMouseOver(int x, int y, int w, int h, int mx, int my) {
-    return (mx >= x && mx <= x+w && my >= y && my <= y+h);
 }
 
 void MultiState::exit() {
@@ -371,13 +343,5 @@ void MultiState::exit() {
     if (winText) { 
         delete winText; 
         winText = nullptr; 
-    }
-    if (retryButton) { 
-        delete retryButton; 
-        retryButton = nullptr; 
-    }
-    if (backButton) { 
-        delete backButton; 
-        backButton = nullptr; 
     }
 }

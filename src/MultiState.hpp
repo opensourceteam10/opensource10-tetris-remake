@@ -4,7 +4,7 @@
 #include "gamestate.hpp"
 #include "texture.hpp"
 
-constexpr int HIDDEN_ROWS = 1; // 논리적 보드를 한 행 올림
+constexpr int HIDDEN_ROWS = 2; // 논리적 보드를 한 행 올림
 
 class MultiState : public GameState {
 public:
@@ -39,8 +39,6 @@ private:
     bool showResult;
     int winnerIdx; // 0 또는 1
     Texture* winText;
-    Texture* retryButton;
-    Texture* backButton;
 
     const int PLAYER1_OFFSET_X = 60;
     const int PLAYER2_OFFSET_X = 420;
