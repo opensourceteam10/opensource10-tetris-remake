@@ -17,30 +17,27 @@ ChallengeMenuState::~ChallengeMenuState()
 void ChallengeMenuState::initialize()
 {
     index = 0;
-    
-    // 타이틀 텍스처 생성
+
+    // 텍스처 초기화
     titleTexture = new Texture();
     titleTexture->loadFromText("CHALLENGE MODE", Game::getInstance()->mRenderer->bigFont, config::default_text_color);
-    
-    // 설명 텍스처 생성
+
     descriptionTexture = new Texture();
     descriptionTexture->loadFromText("Choose Your Challenge", Game::getInstance()->mRenderer->mediumFont, config::default_text_color);
-    
-    // 버튼들 생성
-    #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    // Windows 경로
-    mButtons.push_back(new Button("Speed Challenge", &ChallengeMenuState::startSpeedChallenge, (config::logical_window_width-200)/2, 150, 200, 40));
-    mButtons.push_back(new Button("Master Challenge", &ChallengeMenuState::startMasterChallenge, (config::logical_window_width-200)/2, 200, 200, 40));
-    mButtons.push_back(new Button("Invisible Challenge", &ChallengeMenuState::startInvisibleChallenge, (config::logical_window_width-200)/2, 250, 200, 40));
-    mButtons.push_back(new Button("Back", &ChallengeMenuState::goBack, (config::logical_window_width-200)/2, 300, 200, 40));
-    #else
-    // Mac/Linux 경로
-    mButtons.push_back(new Button("Speed Challenge", &ChallengeMenuState::startSpeedChallenge, (config::logical_window_width-200)/2, 150, 200, 40));
-    mButtons.push_back(new Button("Master Challenge", &ChallengeMenuState::startMasterChallenge, (config::logical_window_width-200)/2, 200, 200, 40));
-    mButtons.push_back(new Button("Invisible Challenge", &ChallengeMenuState::startInvisibleChallenge, (config::logical_window_width-200)/2, 250, 200, 40));
-    mButtons.push_back(new Button("Back", &ChallengeMenuState::goBack, (config::logical_window_width-200)/2, 300, 200, 40));
-    #endif
+
+    // 버튼 설정 (운영체제 무관)
+    const int buttonWidth = 280;
+    const int buttonHeight = 50;
+    const int buttonSpacing = 70;
+    const int startY = 150;
+    const int buttonX = (config::logical_window_width - buttonWidth) / 2;
+
+    mButtons.push_back(new Button("Speed Challenge", &ChallengeMenuState::startSpeedChallenge, buttonX, startY, buttonWidth, buttonHeight));
+    mButtons.push_back(new Button("Invisible Challenge", &ChallengeMenuState::startInvisibleChallenge, buttonX, startY + buttonSpacing, buttonWidth, buttonHeight));
+    mButtons.push_back(new Button("Back", &ChallengeMenuState::goBack, buttonX, startY + 2 * buttonSpacing, buttonWidth, buttonHeight));
 }
+
+
 
 void ChallengeMenuState::exit()
 {
@@ -164,12 +161,6 @@ void ChallengeMenuState::startSpeedChallenge()
     Game::getInstance()->pushSpeedChallenge();
 }
 
-void ChallengeMenuState::startMasterChallenge()
-{
-    std::cout << "Master Challenge Started!" << std::endl;
-    // TODO: MasterChallengeState 연결
-    // Game::getInstance()->pushMasterChallenge();
-}
 
 void ChallengeMenuState::startInvisibleChallenge()
 {
