@@ -130,7 +130,7 @@ void SpeedChallengeState::run()
             {
                 currentPhase = GAME_STARTED;
                 game_just_started = true;
-                Game::getInstance()->pushPaused();
+                Game::getInstance()->pushNewState<PausedState>();
                 return;  // 즉시 반환
             }
             else

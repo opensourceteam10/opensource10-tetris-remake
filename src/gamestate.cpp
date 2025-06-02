@@ -460,7 +460,7 @@ void GameState::handleEvent (Action action)
         {
             currentPhase = GAME_STARTED;
             game_just_started = true;
-            Game::getInstance()->pushPaused();
+            Game::getInstance()->pushNewState<PausedState>();
             // pause 처리 후에는 더 이상 진행하지 않음
             break;
         }

@@ -4,38 +4,38 @@
 #include <string>
 #include <functional>
 #include "texture.hpp"
-#include <SDL_ttf.h>
 
-// Represents a standard button with a texture and a certain position that can be selected. If selected, the callback function can be called
-class Button
-{
+class Button {
 public:
-    // 기존 방식 (이미지 버튼)
-    Button(std::string path, void (*callback)(), int posX = 0, int posY = 0);
-    // 텍스트 버튼용 오버로드
-    Button(const std::string& text, void (*callback)(), int posX, int posY, int w, int h);
+    // 이미지 버튼
+    Button(std::string imagePath, std::function<void()> callback, int posX, int posY);
+
+    // 텍스트 버튼
+    Button(const std::string& text, std::function<void()> callback, int posX, int posY, int w, int h);
 
     ~Button();
 
-    bool loadTexture(std::string path);
     void draw();
-    void (*callbackFunction)();
-
+    void execute(); // 클릭 시 실행
+    void run(){
+	if (callbackFunction) callbackFunction();
+    }
     int getX();
     int getY();
     int getWidth();
     int getHeight();
 
 private:
-    int position_x;
-    int position_y;
-    int width;
-    int height;
-    Texture *texture = nullptr;
-    
-    bool isTextButton = false;
+    std::function<void()> callbackFunction;
     std::string mText;
+    Texture* texture = nullptr;
+
+    int position_x = 0;
+    int position_y = 0;
+    int width = 0;
+    int height = 0;
+
+    bool isTextButton = false;
 };
 
 #endif // BUTTON_HPP
-
