@@ -26,11 +26,12 @@ public:
     virtual void draw() = 0;
     virtual void exit() = 0;
     virtual void update() = 0;
+    StateID nextStateID;
 
 protected:
     InputManager *mInputManager;
     Renderer *mRenderer;
-    StateID nextStateID;
+    
 };
 
 #endif // STATE_HPP
