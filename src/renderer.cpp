@@ -25,11 +25,17 @@ void Renderer::initialize (SDL_Window *window)
     mediumFont = TTF_OpenFont("../assets/munro-small.ttf", 30);
     bigFont = TTF_OpenFont("../assets/munro.ttf", 50);
     #endif
+    
     if (mediumFont == nullptr || bigFont == nullptr)
     {
         std::cerr << "Could not load font! SDL_ttf error: " << TTF_GetError() << '\n';
     }
+    
     mSDLRenderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    
+    // 논리적 해상도 설정 - 이게 중요!
+    SDL_RenderSetLogicalSize(mSDLRenderer, config::logical_window_width, config::logical_window_height);
+    
     clearScreen();
 }
 

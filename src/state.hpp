@@ -1,33 +1,37 @@
 #ifndef STATE_HPP
 #define STATE_HPP
 
-#include "game.hpp"
 #include "inputmanager.hpp"
-#include "renderer.hpp"
 
-enum StateID {STATE_NULL, STATE_EXIT, STATE_POP, STATE_PLAY, STATE_MENU, STATE_PAUSE, LOBBY_STATE};
+// 전방 선언
+class Renderer;
 
-class Game;
+// 상태 ID 열거형
+enum StateID {
+    STATE_NULL,
+    STATE_EXIT,
+    STATE_MENU,
+    STATE_GAME,
+    STATE_PAUSED,
+    STATE_OPTIONS
+};
 
-class State
-{
+class State {
 public:
-    State (InputManager *manager);
-    virtual void initialize () = 0;
-    virtual void exit () = 0;
+    State(InputManager *manager);
+    virtual ~State() {}
 
-    virtual void run () = 0;
-    virtual void update () = 0;
-    virtual void draw () = 0;
-
-    void popState (Game *game);
-    void pushState (Game *game, State *state);
-    void changeState (Game *game, State *state);
+    virtual void initialize() = 0;
+    virtual void run() = 0;
+    virtual void draw() = 0;
+    virtual void exit() = 0;
+    virtual void update() = 0;
     StateID nextStateID;
 
 protected:
     InputManager *mInputManager;
     Renderer *mRenderer;
+    
 };
 
 #endif // STATE_HPP

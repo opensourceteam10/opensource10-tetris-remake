@@ -1,25 +1,10 @@
 #include "state.hpp"
-
 #include "game.hpp"
-#include "inputmanager.hpp"
+#include "renderer.hpp"
 
-State::State (InputManager *manager)
+State::State(InputManager *manager)
 {
     mInputManager = manager;
     mRenderer = Game::getInstance()->mRenderer;
-}
-
-void State::popState (Game *game)
-{
-    game->popState();
-}
-
-void State::pushState (Game *game, State *state)
-{
-    game->pushState(state);
-}
-
-void State::changeState (Game *game, State *state)
-{
-    game->changeState(state);
+    nextStateID = STATE_NULL;
 }

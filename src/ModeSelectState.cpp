@@ -163,16 +163,19 @@ void ModeSelectState::startMode1()
     Game::getInstance()->pushNewGame();
 }
 
+// ModeSelectState.cpp의 startMode2() 함수 수정
+
 void ModeSelectState::startMode2()  
 {
     std::cout << "Multi Mode Started!" << std::endl;
-    Game::getInstance()->pushLobby();
+    // pushLobby() 대신 pushMulti()로 변경
+    Game::getInstance()->pushMulti();  // 바로 멀티플레이 게임으로
 }
 
 void ModeSelectState::startMode3()
 {
     std::cout << "Challenge Mode Started!" << std::endl;
-    Game::getInstance()->pushChallengeMenu();  // 새로 추가할 함수
+    Game::pushChallengeMenu();
 }
 
 void ModeSelectState::goBack()

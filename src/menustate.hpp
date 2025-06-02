@@ -7,6 +7,7 @@
 #include "inputmanager.hpp"
 #include "renderer.hpp"
 #include "state.hpp"
+#include "texture.hpp"
 
 // The main menu of the game; It is the state shown when the game starts
 class MenuState: public State

@@ -10,62 +10,66 @@
 #include "renderer.hpp"
 #include "state.hpp"
 
-class SpeedChallengeState;     // 전방 선언
-class ChallengeMenuState;      // 전방 선언
-class ChallengeMenuState;
-class State;
 class SpeedChallengeState;
+class ChallengeMenuState;
+class InvisibleChallengeState;
+class State;
 class GameState;
 class MenuState;
 class OptionsState;
 class PausedState;
 class LobbyState;
-class ModeSelectState;  // ← 추가된 부분
+class ModeSelectState;
+class MultiState;
 
-// Utilizes the "Singleton pattern" to ensure there can only be one game
 class Game
 {
 public:
-    friend class OptionsState;          // Options can change the window size            
+    friend class OptionsState;
     static Game* getInstance();
 
-    bool initialize ();
-    void exit ();
-    void run ();
+    bool initialize();
+    void exit();
+    void run();
     
-    void popState ();
-    void pushState (State *s);
-    void changeState (State *s);
+    void popState();
+    void pushState(State *s);
+    void changeState(State *s);
 
-    void pushChallengeMenu();
+    static void pushChallengeMenu();
+    static void pushInvisibleChallenge();
     static void pushOptions();
     static void pushNewGame();
     static void pushPaused();
     static void pushLobby();
-    static void pushModeSelect();  // ← 추가된 부분
+    static void pushModeSelect();
+    static void pushSpeedChallenge();
+    static void pushMulti();
+
     static void goBack();
     static void goDoubleBack();
-    static void pushSpeedChallenge();  
 
     bool isGameExiting();
 
-    Renderer *mRenderer;                // The renderer used for all things rendering
-    
+    Renderer *mRenderer;
+    SDL_Window *mWindow;
+
 private:
     static Game *mInstance;
     Game();
-    SDL_Window *mWindow;
     InputManager *mManager;
     std::vector<State*> mStates;
 
     ChallengeMenuState *mChallengeMenuState;
     SpeedChallengeState *mSpeedChallengeState;
+    InvisibleChallengeState *mInvisibleChallengeState;
     GameState *mPlayState;
     MenuState *mMainMenuState;
     OptionsState *mOptionsState;
     PausedState *mPausedState;
     LobbyState *mLobbyState;
-    ModeSelectState *mModeSelectState;  // ← 추가된 부분
+    ModeSelectState *mModeSelectState;
+    MultiState *mMultiState;
 };
 
 #endif // GAME_HPP
