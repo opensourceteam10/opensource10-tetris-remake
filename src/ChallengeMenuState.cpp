@@ -174,10 +174,8 @@ void ChallengeMenuState::startMasterChallenge()
 void ChallengeMenuState::startInvisibleChallenge()
 {
     std::cout << "Invisible Challenge Started!" << std::endl;
-    // TODO: InvisibleChallengeState 연결
-    // Game::getInstance()->pushInvisibleChallenge();
+    Game::getInstance()->pushInvisibleChallenge(); // 이 줄 추가
 }
-
 void ChallengeMenuState::goBack()
 {
     Game::getInstance()->popState();

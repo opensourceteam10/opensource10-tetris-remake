@@ -12,6 +12,7 @@
 
 class SpeedChallengeState;
 class ChallengeMenuState;
+class InvisibleChallengeState;
 class State;
 class GameState;
 class MenuState;
@@ -36,6 +37,7 @@ public:
     void changeState(State *s);
 
     static void pushChallengeMenu();
+    static void pushInvisibleChallenge();
     static void pushOptions();
     static void pushNewGame();
     static void pushPaused();
@@ -60,6 +62,7 @@ private:
 
     ChallengeMenuState *mChallengeMenuState;
     SpeedChallengeState *mSpeedChallengeState;
+    InvisibleChallengeState *mInvisibleChallengeState;
     GameState *mPlayState;
     MenuState *mMainMenuState;
     OptionsState *mOptionsState;
