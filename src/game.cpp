@@ -6,6 +6,7 @@
 #include "gamestate.hpp"
 
 #include "SpeedChallengeState.hpp"
+#include "InvisibleChallengeState.hpp"
 #include "ModeSelectState.hpp"
 #include "MultiState.hpp"
 #include "ChallengeMenuState.hpp"
@@ -23,7 +24,7 @@ Game::Game()
     mMainMenuState = nullptr;
     mOptionsState = nullptr;
     mPausedState = nullptr;
-    
+    mInvisibleChallengeState = nullptr;
     mModeSelectState = nullptr;
     mMultiState = nullptr;
 }
@@ -79,6 +80,7 @@ void Game::exit()
     for (State *s : mStates)
         delete s;
 
+    
     if (mChallengeMenuState) delete mChallengeMenuState;
     if (mSpeedChallengeState) delete mSpeedChallengeState;
     if (mPlayState) delete mPlayState;
@@ -93,6 +95,17 @@ void Game::exit()
     SDL_Quit();
     TTF_Quit();
 }
+
+void Game::pushInvisibleChallenge()
+{
+    if (Game::getInstance()->mInvisibleChallengeState)
+        delete Game::getInstance()->mInvisibleChallengeState;
+    Game::getInstance()->mInvisibleChallengeState = new InvisibleChallengeState(Game::getInstance()->mManager);
+    Game::getInstance()->mInvisibleChallengeState->initialize();
+    Game::getInstance()->pushState(Game::getInstance()->mInvisibleChallengeState);
+}
+
+
 void Game::run()
 {
     if (!mStates.empty())
@@ -108,7 +121,7 @@ void Game::popState()
 {
     if (!mStates.empty())
     {
-        mStates.pop_back();
+        mStates.pop_back();     // 벡터에서 제거
     }
 }
 
