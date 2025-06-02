@@ -13,7 +13,7 @@ class ChallengeMenuState : public GameState
 public:
     ChallengeMenuState(InputManager *manager);
     ~ChallengeMenuState();
-    
+
     void initialize() override;
     void exit() override;
     void run() override;
@@ -25,12 +25,11 @@ private:
     Texture *titleTexture;
     Texture *descriptionTexture;
     int index;  // 현재 선택된 버튼 인덱스
-    
+
     // 콜백 함수들
-    static void startSpeedChallenge();    // 3분 스피드 챌린지
-    static void startMasterChallenge();   // 40라인 마스터 챌린지  
-    static void startInvisibleChallenge(); // 투명 블록 챌린지
-    static void goBack();                 // 뒤로가기
+    static void startSpeedChallenge();      // 스피드 챌린지 시작
+    static void startInvisibleChallenge();  // 투명 블록 챌린지 시작
+    static void goBack();                   // 뒤로 가기
 };
 
 #endif // CHALLENGEMENUSTATE_HPP

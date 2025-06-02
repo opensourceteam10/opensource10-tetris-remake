@@ -123,11 +123,14 @@ void InvisibleChallengeState::draw()
 {
     drawInvisibleBoard();
     drawCurrentPiece(currentPiece);
-    
+
+    if (!board->isGameOver() && config::ghost_piece_enabled)
+        drawGhostPiece(currentPiece);  // ← 추가
+
     if (!hold_block_first_time)
         drawHoldPiece(holdPiece);
     drawNextPiece(nextPiece);
-    
+
     drawUI();
 }
 

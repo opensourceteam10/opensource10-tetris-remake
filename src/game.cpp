@@ -121,11 +121,11 @@ void Game::popState()
 {
     if (!mStates.empty())
     {
-<<<<<<< HEAD
-        mStates.pop_back();     // 벡터에서 제거
-=======
-                mStates.pop_back();
->>>>>>> 15350f11713e8e956307eff1ecebd1e20554f1da
+
+        
+
+         mStates.pop_back();
+
     }
 }
 
