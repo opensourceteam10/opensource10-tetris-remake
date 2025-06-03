@@ -58,6 +58,7 @@ git push origin feature/브랜치이름
 ```
 3. Pull Request(PR) 생성
 4. 코드 리뷰 및 병합
+5. 원격저장소의 새 브랜치 prototypeproject로 병합
 
 ## 라이선스
 
